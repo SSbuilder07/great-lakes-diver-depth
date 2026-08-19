@@ -1,0 +1,9 @@
+{
+  "name": "Great Lakes Diver Depth Planner",
+  "short_name": "Diver Depth",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#eef4f7",
+  "theme_color": "#0a3558",
+  "description": "Offline depth planner for the documented Dreamweaver 124 mm and U-Charters #1 Standard Slide Diver setups."
+}
