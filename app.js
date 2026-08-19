@@ -72,28 +72,13 @@ function evidenceLabel(row, interpolated, verified) {
     return "FIELD — Scott verified boat data";
   }
 
-  let basis = String(row.source_basis || "MODELLED");
+  const basis = String(row.source_basis || "MODELLED");
 
   if (interpolated) {
-    return (
-      "CALCULATED — interpolation between nearest table rows; " +
-      basis
-    );
+    return "CALCULATED — interpolation between nearest table rows; " + basis;
   }
 
-  if (basis.includes("EXPERIMENTAL")) {
-    return "EXPERIMENTAL — " + basis;
-  }
-
-  if (basis.includes("FACTORY") || basis.includes("OFFICIAL")) {
-    return "MODELLED / FACTORY-ANCHORED — " + basis;
-  }
-
-  if (basis.includes("CALCULATED")) {
-    return "CALCULATED — " + basis;
-  }
-
-  return "MODELLED — " + basis;
+  return basis;
 }
 
 function findVerified(system, presentation, speed, setting, lineOut) {
