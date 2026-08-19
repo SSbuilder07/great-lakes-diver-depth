@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta name="theme-color" content="#0a3558">
+
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  >
+
+  <meta
+    name="apple-mobile-web-app-title"
+    content="Diver Depth"
+  >
+
+  <title>Great Lakes Diver Depth</title>
+
+  <link
+    rel="manifest"
+    href="manifest.webmanifest"
+  >
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+</head>
+
+<body>
+
+<header>
+  <div>
+    <div class="eyebrow">
+      OFFLINE PLANNER
+    </div>
+
+    <h1>
+      Great Lakes Diver Depth
+    </h1>
+
+    <p>
+      Dreamweaver 124 mm + U-Charters #1 Standard Slide Diver
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="card controls">
+
+    <label>
+      Diver system
+
+      <select id="system">
+        <option value="dreamweaver">
+          Dreamweaver 124 mm Deeper Diver
+        </option>
+
+        <option value="slide">
+          U-Charters #1 Standard Slide Diver
+        </option>
+      </select>
+    </label>
+
+    <div
+      id="configText"
+      class="config"
+    ></div>
+
+    <div class="grid2">
+
+      <label>
+        Presentation
+
+        <select id="presentation">
+          <option>
+            Spoon
+          </option>
+
+          <option>
+            8" Flasher/Fly
+          </option>
+        </select>
+      </label>
+
+      <label>
+        Surface / GPS speed
+
+        <select id="speed">
+
+          <option value="1.5">
+            1.5 mph
+          </option>
+
+          <option value="2">
+            2.0 mph
+          </option>
+
+          <option
+            value="2.5"
+            selected
+          >
+            2.5 mph
+          </option>
+
+          <option value="3">
+            3.0 mph
+          </option>
+
+          <option value="3.5">
+            3.5 mph
+          </option>
+
+        </select>
+      </label>
+
+    </div>
+
+    <label>
+      Diver setting
+
+      <select id="setting"></select>
+    </label>
+
+    <div class="segmented">
+
+      <button
+        id="byLine"
+        class="active"
+        type="button"
+      >
+        Known line out
+      </button>
+
+      <button
+        id="byDepth"
+        type="button"
+      >
+        Target depth
+      </button>
+
+    </div>
+
+    <label id="valueLabel">
+      Line out
+
+      <div class="inputwrap">
+
+        <input
+          id="value"
+          inputmode="decimal"
+          type="number"
+          min="0"
+          step="1"
+          value="150"
+        >
+
+        <span id="unit">
+          ft
+        </span>
+
+      </div>
+    </label>
+
+    <button
+      id="calculate"
+      class="primary"
+      type="button"
+    >
+      Calculate
+    </button>
+
+  </section>
+
+  <section
+    id="result"
+    class="card result hidden"
+    aria-live="polite"
+  ></section>
+
+  <section class="card note">
+
+    <strong>
+      Boat-use note
+    </strong>
+
+    <p>
+      All speeds are surface/GPS speed over ground.
+      Current, turns, and actual downspeed can make
+      the real diver depth materially different.
+    </p>
+
+  </section>
+
+</main>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
