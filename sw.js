@@ -1,4 +1,4 @@
-const CACHE = "diver-depth-v1";
+const CACHE = "diver-depth-v2";
 
 const ASSETS = [
   "./",
