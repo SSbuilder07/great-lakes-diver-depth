@@ -1,4 +1,4 @@
-const CACHE = "diver-depth-v2";
+const CACHE = "diver-depth-v3-ninja";
 
 const ASSETS = [
   "./",
@@ -16,13 +16,19 @@ self.addEventListener("install", event => {
 });
 
 self.addEventListener("activate", event => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(key => key.startsWith("diver-depth-") && key !== CACHE)
+        .map(key => caches.delete(key))
+    )).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(response => {
+    caches.open(CACHE).then(cache => cache.match(event.request)).then(response => {
       return response || fetch(event.request);
     })
   );
 });
+

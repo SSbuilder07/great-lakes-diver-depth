@@ -285,11 +285,50 @@ function makeSlideRows() {
   return rows;
 }
 
+// User-supplied 124mm (New Diver) chart: 30 lb PowerPro, 2.0–2.2 mph.
+// Presentation is not specified by the chart. No wire/speed/flasher multipliers.
+const NINJA_ANCHORS = {
+  0: [38,72,88,109,114],
+  1: [37,69,84,109,113],
+  2: [36,66,81,107,112],
+  3: [37,62,80,103,110],
+  4: [35,58,77,98,102],
+  5: [32,53,73,94,91]
+};
+
+function makeNinjaRows() {
+  return Object.entries(NINJA_ANCHORS).flatMap(([setting, depths]) =>
+    [15,25,35,50,75,100,125,150,175,200,225,250].map(lineOut => {
+      let depth;
+      if (lineOut < 50) {
+        depth = depths[0] * lineOut / 50;
+      } else {
+        const i = Math.min(3, Math.floor(lineOut / 50) - 1);
+        depth = depths[i] + (lineOut - (i + 1) * 50) / 50 * (depths[i + 1] - depths[i]);
+      }
+      return {
+        presentation: "Chart (presentation unspecified)",
+        surface_speed_mph: 2,
+        setting: Number(setting),
+        line_out_ft: lineOut,
+        estimated_depth_ft: round1(depth),
+        confidence: lineOut < 50 ? "Low" : "Moderate",
+        source_basis: lineOut < 50
+          ? "EXTRAPOLATED — proportional estimate below first 50 ft chart point"
+          : lineOut % 50 === 0 ? "SOURCE CHART — 30 lb PowerPro at 2.0–2.2 mph"
+          : "INTERPOLATED — between source chart points"
+      };
+    })
+  );
+}
+
 window.DIVER_DATA = {
   dreamweaver: makeDreamweaverRows(),
   slide: makeSlideRows(),
+  ninja: makeNinjaRows(),
 
   // Scott's verification template currently contains
   // no confirmed boat measurements marked for use.
   verified: []
 };
+

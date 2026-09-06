@@ -7,15 +7,40 @@ const configs = {
     text: "30 lb 7-strand stainless wire",
     settings: [1, 1.5, 2, 2.5, 3, 3.5]
   },
+  ninja: {
+    text: "30 lb PowerPro · source chart at 2.0–2.2 mph · presentation unspecified",
+    settings: [0, 1, 2, 3, 4, 5]
+  },
   slide: {
     text: "Standard weight + large #3 performance ring + original 50 lb PowerPro",
     settings: [1, 2, 3, 4, 5, 6]
   }
 };
 
+const standardPresentations = $("presentation").innerHTML;
+const standardSpeeds = $("speed").innerHTML;
+let previousSystem = "dreamweaver";
+let standardSelection = {presentation: $("presentation").value, speed: $("speed").value};
+
 function updateSystem() {
   const system = $("system").value;
   const config = configs[system];
+  if (previousSystem !== "ninja") {
+    standardSelection = {presentation: $("presentation").value, speed: $("speed").value};
+  }
+  const ninja = system === "ninja";
+  $("presentation").innerHTML = ninja
+    ? '<option>Chart (presentation unspecified)</option>' : standardPresentations;
+  $("speed").innerHTML = ninja
+    ? '<option value="2">2.0–2.2 mph (chart)</option>' : standardSpeeds;
+  if (!ninja) {
+    $("presentation").value = standardSelection.presentation;
+    $("speed").value = standardSelection.speed;
+  }
+  $("presentation").disabled = ninja;
+  $("speed").disabled = ninja;
+  previousSystem = system;
+  $("result").classList.add("hidden");
 
   $("configText").textContent = config.text;
 
@@ -82,6 +107,7 @@ function evidenceLabel(row, interpolated, verified) {
 }
 
 function findVerified(system, presentation, speed, setting, lineOut) {
+  if (system === "ninja") return undefined;
   return (window.DIVER_DATA.verified || []).find(row => {
     const systemMatch =
       system === "dreamweaver"
@@ -130,6 +156,33 @@ function calculate() {
   const presentation = $("presentation").value;
   const speed = Number($("speed").value);
   const setting = Number($("setting").value);
+
+  if (system === "ninja") {
+    const reject = message => {
+      result.classList.remove("hidden");
+      result.innerHTML = `<div class="error">${message}</div>`;
+    };
+    if (value <= 0 || (mode === "line" && (value < 15 || value > 250))) {
+      reject("Ninja line-out estimates cover 15–250 ft only. Values below 50 ft are extrapolated. Enter a positive target depth.");
+      return;
+    }
+    if (mode === "depth") {
+      const candidates = new Set();
+      for (let i = 0; i < rows.length - 1; i++) {
+        const a = rows[i], b = rows[i + 1];
+        if (value >= Math.min(a.estimated_depth_ft, b.estimated_depth_ft) &&
+            value <= Math.max(a.estimated_depth_ft, b.estimated_depth_ft)) {
+          candidates.add(interpolate(a, b, value, "estimated_depth_ft", "line_out_ft").toFixed(6));
+        }
+      }
+      if (candidates.size !== 1) {
+        reject(candidates.size > 1
+          ? "No unique line-out recommendation: Ninja setting 5 becomes shallower beyond 200 ft. Multiple line lengths match this target. Use known line out and verify depth."
+          : "Target is outside the Ninja table depth range. No supported line-out recommendation is available.");
+        return;
+      }
+    }
+  }
 
   const experimental =
     system === "dreamweaver" && setting === 3.5;
@@ -300,6 +353,8 @@ function renderResult(
   extrapolated,
   experimental
 ) {
+  const ninja = $("system").value === "ninja";
+  if (ninja && lineOut < 50) extrapolated = true;
   const tolerance = verified
     ? 5
     : practicalRange(
@@ -324,7 +379,7 @@ function renderResult(
 
   if (extrapolated) {
     caveat =
-      "LOW CONFIDENCE: this is extrapolated outside the source-supported 25–250 ft table range. " +
+      (ninja ? "LOW CONFIDENCE: proportional extrapolation below the first 50 ft Ninja chart point. " : "LOW CONFIDENCE: this is extrapolated outside the source-supported 25–250 ft table range. ") +
       caveat;
   }
 
@@ -332,6 +387,13 @@ function renderResult(
     caveat =
       "EXPERIMENTAL setting 3.5: the normal Dreamweaver directional scale ends at 3; 3.5 is not a normal, reliable setting. " +
       caveat;
+  }
+
+  if (ninja) {
+    caveat = "Chart conditions: 30 lb PowerPro at 2.0–2.2 mph; presentation unspecified. " + caveat;
+    if (Number($("setting").value) === 5 && lineOut >= 200) {
+      caveat += " Setting 5 decreases from 94 ft at 200 ft out to 91 ft at 250 ft out.";
+    }
   }
 
   const mainResult =
@@ -362,6 +424,8 @@ function renderResult(
 
   let status = "MODELLED / CALCULATED";
 
+  if (ninja && !interpolated && !extrapolated && lineOut % 50 === 0) status = "SOURCE CHART";
+
   if (verified) {
     status = "FIELD";
   } else if (experimental) {
@@ -388,7 +452,7 @@ function renderResult(
         <br>
 
         <b>Surface speed:</b>
-        ${$("speed").value} mph GPS
+        ${ninja ? "2.0–2.2 mph (source chart)" : $("speed").value + " mph GPS"}
         <br>
 
         <b>Setting:</b>
@@ -447,3 +511,4 @@ if ("serviceWorker" in navigator) {
       .catch(() => {});
   });
 }
+
