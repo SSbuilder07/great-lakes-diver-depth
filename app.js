@@ -8,7 +8,7 @@ const configs = {
     settings: [1, 1.5, 2, 2.5, 3, 3.5]
   },
   ninja: {
-    text: "30 lb PowerPro · source chart at 2.0–2.2 mph · presentation unspecified",
+    text: "30 lb PowerPro · estimated spoon / flasher depths · 1.5–3.5 mph",
     settings: [0, 1, 2, 3, 4, 5]
   },
   slide: {
@@ -17,29 +17,9 @@ const configs = {
   }
 };
 
-const standardPresentations = $("presentation").innerHTML;
-const standardSpeeds = $("speed").innerHTML;
-let previousSystem = "dreamweaver";
-let standardSelection = {presentation: $("presentation").value, speed: $("speed").value};
-
 function updateSystem() {
   const system = $("system").value;
   const config = configs[system];
-  if (previousSystem !== "ninja") {
-    standardSelection = {presentation: $("presentation").value, speed: $("speed").value};
-  }
-  const ninja = system === "ninja";
-  $("presentation").innerHTML = ninja
-    ? '<option>Chart (presentation unspecified)</option>' : standardPresentations;
-  $("speed").innerHTML = ninja
-    ? '<option value="2">2.0–2.2 mph (chart)</option>' : standardSpeeds;
-  if (!ninja) {
-    $("presentation").value = standardSelection.presentation;
-    $("speed").value = standardSelection.speed;
-  }
-  $("presentation").disabled = ninja;
-  $("speed").disabled = ninja;
-  previousSystem = system;
   $("result").classList.add("hidden");
 
   $("configText").textContent = config.text;
@@ -390,9 +370,9 @@ function renderResult(
   }
 
   if (ninja) {
-    caveat = "Chart conditions: 30 lb PowerPro at 2.0–2.2 mph; presentation unspecified. " + caveat;
+    caveat = "Estimated from the Ninja chart (30 lb PowerPro, 2.0–2.2 mph), assuming a spoon baseline at 2.0 mph. Speed and flasher effects are borrowed estimates, not Ninja measurements. " + caveat;
     if (Number($("setting").value) === 5 && lineOut >= 200) {
-      caveat += " Setting 5 decreases from 94 ft at 200 ft out to 91 ft at 250 ft out.";
+      caveat += " Setting 5 becomes shallower beyond 200 ft out; this model preserves the chart’s depth reversal.";
     }
   }
 
@@ -424,7 +404,7 @@ function renderResult(
 
   let status = "MODELLED / CALCULATED";
 
-  if (ninja && !interpolated && !extrapolated && lineOut % 50 === 0) status = "SOURCE CHART";
+  if (ninja) status = "MODELLED — ESTIMATED RATIOS";
 
   if (verified) {
     status = "FIELD";
@@ -452,7 +432,7 @@ function renderResult(
         <br>
 
         <b>Surface speed:</b>
-        ${ninja ? "2.0–2.2 mph (source chart)" : $("speed").value + " mph GPS"}
+        ${$("speed").value} mph GPS
         <br>
 
         <b>Setting:</b>

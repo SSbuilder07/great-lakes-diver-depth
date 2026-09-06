@@ -286,7 +286,9 @@ function makeSlideRows() {
 }
 
 // User-supplied 124mm (New Diver) chart: 30 lb PowerPro, 2.0–2.2 mph.
-// Presentation is not specified by the chart. No wire/speed/flasher multipliers.
+// Presentation is unspecified: assume a spoon baseline at 2.0 mph for modelling.
+// Borrow existing DW speed factors and shared flasher factors; keep 30 lb braid.
+// These transferred ratios are estimates, not measured Ninja performance.
 const NINJA_ANCHORS = {
   0: [38,72,88,109,114],
   1: [37,69,84,109,113],
@@ -296,30 +298,45 @@ const NINJA_ANCHORS = {
   5: [32,53,73,94,91]
 };
 
+const NINJA_LINE_OUTS = [15,25,35,50,75,100,125,150,175,200,225,250];
+
+function ninjaChartDepth(setting, lineOut) {
+  const depths = NINJA_ANCHORS[setting];
+  if (lineOut < 50) return depths[0] * lineOut / 50;
+  const i = Math.min(3, Math.floor(lineOut / 50) - 1);
+  return depths[i] + (lineOut - (i + 1) * 50) / 50 * (depths[i + 1] - depths[i]);
+}
+
 function makeNinjaRows() {
-  return Object.entries(NINJA_ANCHORS).flatMap(([setting, depths]) =>
-    [15,25,35,50,75,100,125,150,175,200,225,250].map(lineOut => {
-      let depth;
-      if (lineOut < 50) {
-        depth = depths[0] * lineOut / 50;
-      } else {
-        const i = Math.min(3, Math.floor(lineOut / 50) - 1);
-        depth = depths[i] + (lineOut - (i + 1) * 50) / 50 * (depths[i + 1] - depths[i]);
+  const rows = [];
+  for (const presentation of ["Spoon", '8" Flasher/Fly']) {
+    for (const speed of [1.5,2,2.5,3,3.5]) {
+      for (const setting of [0,1,2,3,4,5]) {
+        for (const lineOut of NINJA_LINE_OUTS) {
+          const flasher = presentation === '8" Flasher/Fly';
+          const speedFactor = SPEED_MULT[speed];
+          const presentationFactor = flasher ? FLASHER_MULT[speed] : 1;
+          const basis = ["MODELLED — Ninja source chart; assumed spoon baseline at 2.0 mph"];
+          if (lineOut < 50) basis.push("EXTRAPOLATED below first 50 ft chart point");
+          else if (lineOut % 50 !== 0) basis.push("INTERPOLATED between chart anchors");
+          basis.push(`DW speed factor ×${speedFactor.toFixed(2)}`);
+          if (flasher) basis.push(`estimated flasher/fly factor ×${presentationFactor.toFixed(2)}`);
+          rows.push({
+            presentation,
+            surface_speed_mph: speed,
+            setting,
+            line_out_ft: lineOut,
+            estimated_depth_ft: round1(ninjaChartDepth(setting, lineOut) * speedFactor * presentationFactor),
+            confidence: lineOut < 50 || flasher || speed === 1.5 || speed >= 3 ? "Low" : "Moderate-Low",
+            source_basis: basis.join("; "),
+            speed_factor: speedFactor,
+            presentation_factor: presentationFactor
+          });
+        }
       }
-      return {
-        presentation: "Chart (presentation unspecified)",
-        surface_speed_mph: 2,
-        setting: Number(setting),
-        line_out_ft: lineOut,
-        estimated_depth_ft: round1(depth),
-        confidence: lineOut < 50 ? "Low" : "Moderate",
-        source_basis: lineOut < 50
-          ? "EXTRAPOLATED — proportional estimate below first 50 ft chart point"
-          : lineOut % 50 === 0 ? "SOURCE CHART — 30 lb PowerPro at 2.0–2.2 mph"
-          : "INTERPOLATED — between source chart points"
-      };
-    })
-  );
+    }
+  }
+  return rows;
 }
 
 window.DIVER_DATA = {
