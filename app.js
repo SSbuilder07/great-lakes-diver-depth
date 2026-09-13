@@ -393,69 +393,7 @@ function renderResult(
         </div>
       `;
 
-  const label = evidenceLabel(
-    row,
-    interpolated,
-    verified
-  );
-
-  const setting = Number($("setting").value);
-  const config = configs[$("system").value].text;
-
-  let status = "MODELLED / CALCULATED";
-
-  if (ninja) status = "MODELLED — ESTIMATED RATIOS";
-
-  if (verified) {
-    status = "FIELD";
-  } else if (experimental) {
-    status = "EXPERIMENTAL";
-  } else if (extrapolated) {
-    status = "MODELLED · LOW CONFIDENCE";
-  }
-
-  $("result").innerHTML =
-    mainResult +
-    `
-      <div>
-        <span class="badge">${status}</span>
-        <span class="badge">${row.confidence || "Moderate-Low"}</span>
-      </div>
-
-      <div class="detail">
-        <b>Diver / line / ring or weight:</b>
-        ${$("system").selectedOptions[0].textContent} — ${config}
-        <br>
-
-        <b>Presentation:</b>
-        ${$("presentation").value}
-        <br>
-
-        <b>Surface speed:</b>
-        ${$("speed").value} mph GPS
-        <br>
-
-        <b>Setting:</b>
-        ${setting}
-        <br>
-
-        <b>${mode === "line" ? "Line out" : "Target depth"}:</b>
-        ${
-          mode === "line"
-            ? roundedLine + " ft"
-            : roundedDepth + " ft"
-        }
-        <br><br>
-
-        <b>Evidence basis:</b>
-        ${label}
-      </div>
-
-      <div class="warning">
-        <b>Practical note:</b>
-        ${caveat}
-      </div>
-    `;
+  $("result").innerHTML = mainResult;
 
   $("result").classList.remove("hidden");
 
@@ -491,4 +429,5 @@ if ("serviceWorker" in navigator) {
       .catch(() => {});
   });
 }
+
 
