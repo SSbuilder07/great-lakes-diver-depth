@@ -1,4 +1,4 @@
-const CACHE = "diver-depth-v4-ninja-ratios";
+const CACHE = "diver-depth-v5-simplified-ui";
 
 const ASSETS = [
   "./",
